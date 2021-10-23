@@ -8,7 +8,7 @@ object AppColors {
     val grayPlaceholder = Color(0xFFAAA9A9)
     val graySubtext = Color(0xFF717171)
 
-    val red = Color(0xFFDE0613)
+    val redAccent = Color(0xFFDE0613)
     val greenAccent = Color(0xFF0EC246)
 
     val white = Color(0xFFF9F9F9)
