@@ -18,8 +18,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
-import coil.transform.RoundedCornersTransformation
-import coil.transition.Transition
 import ru.polytech.stonks.R
 import ru.polytech.stonks.domain.common.model.Currency
 import ru.polytech.stonks.domain.common.model.Period
@@ -92,7 +90,7 @@ private fun StockItem(item: Stock) {
             Text(
                 text = item.ticker,
                 style = Montserrat.Medium500.SP14,
-                color = AppColors.grayDark,
+                color = AppColors.grayPlaceholder,
 //                modifier = Modifier.padding(bottom = 10.dp)
             )
         }
@@ -114,7 +112,7 @@ private fun StockItem(item: Stock) {
             Text(
                 text = item.price.difference[Period.Day]?.displayed ?: "",
                 style = Montserrat.SemiBold600.SP18,
-                color = AppColors.green,
+                color = AppColors.greenAccent,
 //                modifier = Modifier.padding(bottom = 10.dp)
             )
         }
@@ -163,7 +161,7 @@ private fun SearchPanel() {
                     .padding(start = 18.dp)
                     .size(35.dp)
                     .background(
-                        color = AppColors.green,
+                        color = AppColors.greenAccent,
                         shape = RoundedCornerShape(10.dp)
                     ),
             ) {
@@ -201,13 +199,13 @@ private fun SearchPanel() {
             Text(
                 text = "Название и тикер",
                 style = Montserrat.SemiBold600.SP10,
-                color = AppColors.grayDark,
+                color = AppColors.grayPlaceholder,
             )
 
             Text(
                 text = "Цена и динамика за год",
                 style = Montserrat.SemiBold600.SP10,
-                color = AppColors.grayDark,
+                color = AppColors.grayPlaceholder,
             )
         }
     }

@@ -41,7 +41,7 @@ object Compose {
                 Text(
                     text = "Экран находится в разработке",
                     style = Montserrat.SemiBold600.SP16,
-                    color = AppColors.grayDark
+                    color = AppColors.grayPlaceholder
                 )
             }
         }
