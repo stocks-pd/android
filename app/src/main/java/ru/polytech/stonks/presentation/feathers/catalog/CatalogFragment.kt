@@ -27,7 +27,10 @@ class CatalogFragment : BaseFragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                CatalogScreen(modelState = viewModel.state, consumer = {})
+                CatalogScreen(
+                    modelState = viewModel.state,
+                    consumer = viewModel::obtainEvent
+                )
             }
         }
     }

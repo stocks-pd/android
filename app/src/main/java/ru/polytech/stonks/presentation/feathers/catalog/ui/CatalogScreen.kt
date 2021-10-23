@@ -2,18 +2,22 @@ package ru.polytech.stonks.presentation.feathers.catalog.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -167,15 +171,23 @@ fun StockTypePanel(selectedType: StockType, onClick: (StockType) -> Unit) {
 
 @Composable
 fun StockTypeItem(isSelected: Boolean, text: String, onClick: Click) {
-    val modifierSelected = Modifier
-        .padding(2.dp)
-        .background(
-            color = AppColors.greenAccent,
-            shape = RoundedCornerShape(10.dp)
-        )
     Box(
-        modifier = if (isSelected) modifierSelected else Modifier.padding(2.dp),
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .padding(2.dp)
+            .background(
+                color = if (isSelected) {
+                    AppColors.greenAccent
+                } else {
+                    AppColors.grayLight
+                },
+                shape = RoundedCornerShape(10.dp)
+            )
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(
+                indication = rememberRipple(),
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick
+            ),
     ) {
         Text(
             text = text,
