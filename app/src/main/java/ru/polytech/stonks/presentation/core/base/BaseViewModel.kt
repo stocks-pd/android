@@ -12,4 +12,8 @@ abstract class BaseViewModel<ViewState, Action, Event>(initState: ViewState) : V
     val actions: MutableSharedFlow<Action> = MutableSharedFlow()
 
     abstract fun obtainEvent(event: Event)
+
+    fun updateState(newState: ViewState) {
+        state.value = newState
+    }
 }

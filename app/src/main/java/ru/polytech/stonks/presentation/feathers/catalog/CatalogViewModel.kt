@@ -10,15 +10,18 @@ class CatalogViewModel @Inject constructor(
 
 ) : BaseViewModel<CatalogState, CatalogAction, CatalogEvent>(CatalogState.stub) {
 
-
     override fun obtainEvent(event: CatalogEvent) {
         when(event) {
-            CatalogEvent.OnFavorsClicked -> TODO()
-            CatalogEvent.OnFiltersClicked -> TODO()
-            is CatalogEvent.OnItemClicked -> TODO()
-            CatalogEvent.OnSearchClicked -> TODO()
-            CatalogEvent.OnSortsClicked -> TODO()
-            is CatalogEvent.OnTypeChanged -> TODO()
+            CatalogEvent.OnFavorsClicked -> updateState(
+                state.value.copy(isFavorsEnabled = !state.value.isFavorsEnabled)
+            )
+            CatalogEvent.OnFiltersClicked -> {}
+            is CatalogEvent.OnItemClicked -> {}
+            CatalogEvent.OnSearchClicked -> {}
+            CatalogEvent.OnSortsClicked -> {}
+            is CatalogEvent.OnTypeChanged -> updateState(
+                state.value.copy(selectedStockType = event.type)
+            )
         }
     }
 }
