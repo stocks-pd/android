@@ -1,6 +1,7 @@
 package ru.polytech.stonks.presentation.feathers.catalog.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.background
@@ -8,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.ripple.rememberRipple
@@ -34,29 +36,43 @@ import ru.polytech.stonks.resourses.AppColors
 
 @Composable
 fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEvent) -> Unit) {
-
     val state by remember { modelState }
-    Column {
-        Compose.ToolbarWithText(text = "Каталог")
-
-        LazyColumn {
-            item {
-                Header(
-                    isFavorsEnabled = state.isFavorsEnabled,
-                    selectedType = state.selectedStockType,
-                    searchText = state.searchText,
-                    onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
-                    onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
-                    onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
-                    onSearchClicked = { consumer(CatalogEvent.OnSearchClicked) },
-                    onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
-                )
+    val listState = rememberLazyListState()
+    Scaffold(
+        backgroundColor = AppColors.white,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = if (listState.firstVisibleItemIndex != 0 ||
+                            listState.firstVisibleItemScrollOffset != 0) 6.dp else 0.dp,
+                    )
+            ) {
+                Compose.ToolbarWithText(text = "Каталог")
             }
-            items(state.stocks.size) { index ->
-                StockItem(
-                    item = state.stocks[index],
-                    onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
-                )
+        }
+    ) {
+        Column {
+            LazyColumn(state = listState) {
+                item {
+                    Header(
+                        isFavorsEnabled = state.isFavorsEnabled,
+                        selectedType = state.selectedStockType,
+                        searchText = state.searchText,
+                        onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
+                        onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
+                        onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
+                        onSearchClicked = { consumer(CatalogEvent.OnSearchClicked) },
+                        onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
+                    )
+                }
+                items(state.stocks.size) { index ->
+                    StockItem(
+                        item = state.stocks[index],
+                        onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
+                    )
+                }
             }
         }
     }
