@@ -1,10 +1,8 @@
 package ru.polytech.stonks.presentation.core.compose
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,6 +30,22 @@ object Compose {
             )
         }
     }
+
+    @Composable
+    fun Snap() {
+        Surface(color = AppColors.white) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Экран находится в разработке",
+                    style = Montserrat.SemiBold600.SP16,
+                    color = AppColors.grayDark
+                )
+            }
+        }
+    }
 }
 
 @Preview
@@ -40,4 +54,10 @@ fun ToolbarWithTextPreview() {
     Compose.ToolbarWithText(
         text = "Toolbar"
     )
+}
+
+@Preview
+@Composable
+fun SnapPreview() {
+    Compose.Snap()
 }
