@@ -3,6 +3,7 @@ package ru.polytech.stonks.presentation.feathers.catalog.ui
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,17 +36,26 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
 
         LazyColumn {
             item {
-                Header()
+                Header(
+                    onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
+                    onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
+                    onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
+                    onSearchClicked = { consumer(CatalogEvent.OnSearchClicked) },
+                    onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
+                )
             }
             items(state.stocks.size) { index ->
-                StockItem(item = state.stocks[index])
+                StockItem(
+                    item = state.stocks[index],
+                    onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun StockItem(item: Stock) {
+private fun StockItem(item: Stock, onClick: Click) {
     Row(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -55,7 +65,8 @@ private fun StockItem(item: Stock) {
             .background(
                 color = AppColors.grayLight,
                 shape = RoundedCornerShape(10.dp)
-            ),
+            )
+            .clickable(onClick = onClick),
     ) {
         Image(
             painter = rememberImagePainter(
@@ -116,7 +127,7 @@ private fun StockItem(item: Stock) {
 }
 
 @Composable
-fun StockTypePanel(selectedType: StockType) {
+fun StockTypePanel(selectedType: StockType, onClick: (StockType) -> Unit) {
     Row(
         modifier = Modifier
             .height(35.dp)
@@ -127,16 +138,26 @@ fun StockTypePanel(selectedType: StockType) {
             ),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        StockTypeItem(isSelected = selectedType == StockType.STOCK, text = "Акции", onClick = {})
-        StockTypeItem(isSelected = selectedType == StockType.FUND, text = "Фонды", onClick = {})
+        StockTypeItem(
+            isSelected = selectedType == StockType.STOCK,
+            text = "Акции",
+            onClick = { onClick(StockType.STOCK) }
+        )
+        StockTypeItem(
+            isSelected = selectedType == StockType.FUND,
+            text = "Фонды",
+            onClick = { onClick(StockType.FUND) }
+        )
         StockTypeItem(
             isSelected = selectedType == StockType.OBLIGATION,
             text = "Облигации",
-            onClick = {})
+            onClick = { onClick(StockType.OBLIGATION) }
+        )
         StockTypeItem(
             isSelected = selectedType == StockType.CURRENCY,
             text = "Валюты",
-            onClick = {})
+            onClick = { onClick(StockType.CURRENCY) }
+        )
     }
 }
 
@@ -256,19 +277,33 @@ fun HeaderDescription() {
 
 
 @Composable
-private fun Header() {
+private fun Header(
+    onStockTypeClicked: (StockType) -> Unit,
+    onSortsClicked: Click,
+    onFiltersClicked: Click,
+    onSearchClicked: Click,
+    onFavorsClicked: Click,
+) {
     Column(Modifier.padding(horizontal = 16.dp)) {
         Row {
             Column(modifier = Modifier.weight(1f)) {
-                StockTypePanel(StockType.STOCK)
+                StockTypePanel(StockType.STOCK, onStockTypeClicked)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row {
                     Box(modifier = Modifier.weight(1f)) {
-                        HeaderButton(icon = R.drawable.ic_sorts, text = "Сортировка") {}
+                        HeaderButton(
+                            icon = R.drawable.ic_sorts,
+                            text = "Сортировка",
+                            onClick = onSortsClicked
+                        )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Box(modifier = Modifier.weight(1f)) {
-                        HeaderButton(icon = R.drawable.ic_filters, text = "Фильтры") {}
+                        HeaderButton(
+                            icon = R.drawable.ic_filters,
+                            text = "Фильтры",
+                            onClick = onFiltersClicked
+                        )
                     }
                 }
             }
@@ -276,9 +311,14 @@ private fun Header() {
             Spacer(modifier = Modifier.width(13.dp))
 
             Column {
-                FavorsButton(isActive = false) {}
+                FavorsButton(
+                    isActive = false,
+                    onClick = onFavorsClicked
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                SearchButton {}
+                SearchButton(
+                    onClick = onSearchClicked
+                )
             }
         }
         HeaderDescription()
@@ -301,12 +341,13 @@ fun ItemPreview() {
             ),
             imageUrl = "https://pbs.twimg.com/media/EBEaNVtUcAEZp3E.png",
             type = StockType.STOCK
-        )
+        ),
+        onClick = {}
     )
 }
 
 @Preview
 @Composable
 fun HeaderPreview() {
-    Header()
+    Header({}, {}, {}, {}, {})
 }

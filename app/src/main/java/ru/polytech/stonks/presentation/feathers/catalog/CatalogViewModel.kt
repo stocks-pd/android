@@ -12,6 +12,13 @@ class CatalogViewModel @Inject constructor(
 
 
     override fun obtainEvent(event: CatalogEvent) {
-
+        when(event) {
+            CatalogEvent.OnFavorsClicked -> TODO()
+            CatalogEvent.OnFiltersClicked -> TODO()
+            is CatalogEvent.OnItemClicked -> TODO()
+            CatalogEvent.OnSearchClicked -> TODO()
+            CatalogEvent.OnSortsClicked -> TODO()
+            is CatalogEvent.OnTypeChanged -> TODO()
+        }
     }
 }
