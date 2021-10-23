@@ -1,7 +1,7 @@
 package ru.polytech.stonks.presentation.feathers.catalog.ui
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.background
@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
@@ -46,7 +47,8 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
                     .fillMaxWidth()
                     .shadow(
                         elevation = if (listState.firstVisibleItemIndex != 0 ||
-                            listState.firstVisibleItemScrollOffset != 0) 6.dp else 0.dp,
+                            listState.firstVisibleItemScrollOffset != 0
+                        ) 6.dp else 0.dp,
                     )
             ) {
                 Compose.ToolbarWithText(text = "Каталог")
@@ -58,6 +60,7 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
                 item {
                     Header(
                         isFavorsEnabled = state.isFavorsEnabled,
+                        isSearchEnabled = state.isSearchEnabled,
                         selectedType = state.selectedStockType,
                         searchText = state.searchText,
                         onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
@@ -65,6 +68,8 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
                         onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
                         onSearchClicked = { consumer(CatalogEvent.OnSearchClicked) },
                         onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
+                        onClearSearchClick = { consumer(CatalogEvent.OnClearSearchClicked) },
+                        onSearchValueChanged = { consumer(CatalogEvent.OnSearchTextValueChanged(it)) },
                     )
                 }
                 items(state.stocks.size) { index ->
@@ -240,20 +245,20 @@ fun FavorsButton(isEnabled: Boolean, onClick: Click) {
 }
 
 @Composable
-fun SearchButton(onClick: Click) {
+fun SearchButton(isSearchEnabled: Boolean, onClick: Click) {
     IconButton(
         onClick = onClick,
         modifier = Modifier
             .size(35.dp)
             .background(
-                color = AppColors.grayLight,
+                color = if (isSearchEnabled) AppColors.greenAccent else AppColors.grayLight,
                 shape = RoundedCornerShape(10.dp)
             )
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_search),
             contentDescription = null,
-            tint = AppColors.black
+            tint = if (isSearchEnabled) AppColors.white else AppColors.black
         )
     }
 }
@@ -307,16 +312,122 @@ fun HeaderDescription() {
     }
 }
 
+@Composable
+fun SearchField(value: TextFieldValue, onSearchValueChanged: (TextFieldValue) -> Unit) {
+    BasicTextField(
+        value = value,
+        onValueChange = onSearchValueChanged,
+        singleLine = true,
+        textStyle = Montserrat.Medium500.SP13,
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = AppColors.grayLight,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (value.text.isBlank()) {
+                    Text(
+                        text = "Название или тикер",
+                        style = Montserrat.Medium500.SP13,
+                        color = AppColors.graySubtext
+                    )
+                } else {
+                    innerTextField()
+                }
+            }
+        },
+        modifier = Modifier.fillMaxSize()
+    )
+//    TextField(
+//        value = value,
+//        onValueChange = onSearchValueChanged,
+//        placeholder = {
+//            Text(
+//                text = "Название или тикер",
+//                style = Montserrat.Medium500.SP13,
+//                color = AppColors.graySubtext
+//            )
+//        },
+//        singleLine = true,
+//        shape = RoundedCornerShape(10.dp),
+//        colors = TextFieldDefaults.textFieldColors(
+//            textColor = AppColors.black,
+//            backgroundColor = AppColors.grayLight,
+//            placeholderColor = AppColors.graySubtext,
+//            cursorColor = AppColors.greenAccent,
+//            focusedIndicatorColor = AppColors.transparent,
+//            unfocusedIndicatorColor = AppColors.transparent,
+//            disabledIndicatorColor = AppColors.transparent
+//        ),
+//        modifier = Modifier.fillMaxWidth().height(45.dp)
+//    )
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun SearchOrFiltersPanel(
+    isSearchEnabled: Boolean,
+    searchText: TextFieldValue,
+    onSortsClicked: Click,
+    onFiltersClicked: Click,
+    onClearSearchClick: Click,
+    onSearchValueChanged: (TextFieldValue) -> Unit
+) {
+
+    Row(modifier = Modifier.height(35.dp)) {
+        if (isSearchEnabled) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)) {
+                SearchField(value = searchText, onSearchValueChanged = onSearchValueChanged)
+                IconButton(
+                    onClick = onClearSearchClick,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_clear),
+                        contentDescription = null
+                    )
+                }
+            }
+        } else {
+            Box(modifier = Modifier.weight(1f)) {
+                HeaderButton(
+                    icon = R.drawable.ic_sorts,
+                    text = "Сортировка",
+                    onClick = onSortsClicked
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Box(modifier = Modifier.weight(1f)) {
+                HeaderButton(
+                    icon = R.drawable.ic_filters,
+                    text = "Фильтры",
+                    onClick = onFiltersClicked
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun Header(
     isFavorsEnabled: Boolean,
+    isSearchEnabled: Boolean,
     selectedType: StockType,
     searchText: TextFieldValue,
     onStockTypeClicked: (StockType) -> Unit,
     onSortsClicked: Click,
     onFiltersClicked: Click,
     onSearchClicked: Click,
+    onClearSearchClick: Click,
+    onSearchValueChanged: (TextFieldValue) -> Unit,
     onFavorsClicked: Click,
 ) {
     Column(Modifier.padding(horizontal = 16.dp)) {
@@ -327,23 +438,31 @@ private fun Header(
                     onClick = onStockTypeClicked
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Row {
-                    Box(modifier = Modifier.weight(1f)) {
-                        HeaderButton(
-                            icon = R.drawable.ic_sorts,
-                            text = "Сортировка",
-                            onClick = onSortsClicked
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Box(modifier = Modifier.weight(1f)) {
-                        HeaderButton(
-                            icon = R.drawable.ic_filters,
-                            text = "Фильтры",
-                            onClick = onFiltersClicked
-                        )
-                    }
-                }
+//                Row {
+//                    Box(modifier = Modifier.weight(1f)) {
+//                        HeaderButton(
+//                            icon = R.drawable.ic_sorts,
+//                            text = "Сортировка",
+//                            onClick = onSortsClicked
+//                        )
+//                    }
+//                    Spacer(modifier = Modifier.width(10.dp))
+//                    Box(modifier = Modifier.weight(1f)) {
+//                        HeaderButton(
+//                            icon = R.drawable.ic_filters,
+//                            text = "Фильтры",
+//                            onClick = onFiltersClicked
+//                        )
+//                    }
+//                }
+                SearchOrFiltersPanel(
+                    isSearchEnabled = isSearchEnabled,
+                    searchText = searchText,
+                    onSortsClicked = onSortsClicked,
+                    onFiltersClicked = onFiltersClicked,
+                    onClearSearchClick = onClearSearchClick,
+                    onSearchValueChanged = onSearchValueChanged
+                )
             }
 
             Spacer(modifier = Modifier.width(13.dp))
@@ -355,7 +474,8 @@ private fun Header(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 SearchButton(
-                    onClick = onSearchClicked
+                    onClick = onSearchClicked,
+                    isSearchEnabled = isSearchEnabled
                 )
             }
         }
@@ -384,8 +504,8 @@ fun ItemPreview() {
     )
 }
 
-@Preview
-@Composable
-fun HeaderPreview() {
-    Header(false, StockType.STOCK, TextFieldValue(""), {}, {}, {}, {}, {})
-}
+//@Preview
+//@Composable
+//fun HeaderPreview() {
+//    Header(false, StockType.STOCK, TextFieldValue(""), {}, {}, {}, {}, {})
+//}

@@ -8,10 +8,13 @@ data class CatalogState(
     val stocks: List<Stock> = emptyList(),
     val selectedStockType: StockType = StockType.STOCK,
     val isSearchEnabled: Boolean = false,
-    val searchText: TextFieldValue = TextFieldValue(),
+    val searchText: TextFieldValue = EMPTY_SEARCH_VALUE,
     val isFavorsEnabled: Boolean = false,
 ) {
     companion object {
+
+        val EMPTY_SEARCH_VALUE = TextFieldValue("")
+
         val stub = CatalogState(
             stocks = List(40) {
                 Stock(

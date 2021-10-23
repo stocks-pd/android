@@ -157,6 +157,14 @@ object Montserrat {
             lineHeight = 16.sp
         )
 
+        val SP13 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W500,
+            fontStyle = FontStyle.Normal,
+            fontSize = 13.sp,
+            lineHeight = 16.sp
+        )
+
         val SP11 = TextStyle(
             fontFamily = montserrat,
             fontWeight = FontWeight.W500,
