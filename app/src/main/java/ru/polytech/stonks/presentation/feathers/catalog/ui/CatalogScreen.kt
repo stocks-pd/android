@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
@@ -37,6 +38,9 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
         LazyColumn {
             item {
                 Header(
+                    isFavorsEnabled = state.isFavorsEnabled,
+                    selectedType = state.selectedStockType,
+                    searchText = state.searchText,
                     onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
                     onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
                     onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
@@ -183,26 +187,26 @@ fun StockTypeItem(isSelected: Boolean, text: String, onClick: Click) {
 }
 
 @Composable
-fun FavorsButton(isActive: Boolean, onClick: Click) {
+fun FavorsButton(isEnabled: Boolean, onClick: Click) {
     IconButton(
         onClick = onClick,
         modifier = Modifier
             .size(35.dp)
             .background(
-                color = if (isActive) AppColors.greenAccent else AppColors.grayLight,
+                color = if (isEnabled) AppColors.greenAccent else AppColors.grayLight,
                 shape = RoundedCornerShape(10.dp)
             )
     ) {
         Icon(
             painter = painterResource(
-                id = if (isActive) {
+                id = if (isEnabled) {
                     R.drawable.ic_star_favors_enabled
                 } else {
                     R.drawable.ic_star_favors
                 }
             ),
             contentDescription = null,
-            tint = if (isActive) AppColors.white else AppColors.black
+            tint = if (isEnabled) AppColors.white else AppColors.black
         )
     }
 }
@@ -278,6 +282,9 @@ fun HeaderDescription() {
 
 @Composable
 private fun Header(
+    isFavorsEnabled: Boolean,
+    selectedType: StockType,
+    searchText: TextFieldValue,
     onStockTypeClicked: (StockType) -> Unit,
     onSortsClicked: Click,
     onFiltersClicked: Click,
@@ -287,7 +294,10 @@ private fun Header(
     Column(Modifier.padding(horizontal = 16.dp)) {
         Row {
             Column(modifier = Modifier.weight(1f)) {
-                StockTypePanel(StockType.STOCK, onStockTypeClicked)
+                StockTypePanel(
+                    selectedType = selectedType,
+                    onClick = onStockTypeClicked
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row {
                     Box(modifier = Modifier.weight(1f)) {
@@ -312,7 +322,7 @@ private fun Header(
 
             Column {
                 FavorsButton(
-                    isActive = false,
+                    isEnabled = isFavorsEnabled,
                     onClick = onFavorsClicked
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -349,5 +359,5 @@ fun ItemPreview() {
 @Preview
 @Composable
 fun HeaderPreview() {
-    Header({}, {}, {}, {}, {})
+    Header(false, StockType.STOCK, TextFieldValue(""), {}, {}, {}, {}, {})
 }
