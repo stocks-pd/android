@@ -1,14 +1,13 @@
 package ru.polytech.stonks.presentation.feathers.catalog.ui
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.Indication
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -17,12 +16,17 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import ru.polytech.stonks.R
@@ -55,7 +59,7 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
             }
         }
     ) {
-        Column {
+        Box {
             LazyColumn(state = listState) {
                 item {
                     Header(
@@ -78,6 +82,14 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
                         onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
                     )
                 }
+            }
+
+            if (state.isSearchEnabled) {
+                SearchHints(
+                    hints = listOf("qweqwe", "qweqwe", "qweeeee"),
+                    listState = listState,
+                    listIsNotEmpty = state.stocks.isNotEmpty()
+                )
             }
         }
     }
@@ -343,29 +355,6 @@ fun SearchField(value: TextFieldValue, onSearchValueChanged: (TextFieldValue) ->
         },
         modifier = Modifier.fillMaxSize()
     )
-//    TextField(
-//        value = value,
-//        onValueChange = onSearchValueChanged,
-//        placeholder = {
-//            Text(
-//                text = "Название или тикер",
-//                style = Montserrat.Medium500.SP13,
-//                color = AppColors.graySubtext
-//            )
-//        },
-//        singleLine = true,
-//        shape = RoundedCornerShape(10.dp),
-//        colors = TextFieldDefaults.textFieldColors(
-//            textColor = AppColors.black,
-//            backgroundColor = AppColors.grayLight,
-//            placeholderColor = AppColors.graySubtext,
-//            cursorColor = AppColors.greenAccent,
-//            focusedIndicatorColor = AppColors.transparent,
-//            unfocusedIndicatorColor = AppColors.transparent,
-//            disabledIndicatorColor = AppColors.transparent
-//        ),
-//        modifier = Modifier.fillMaxWidth().height(45.dp)
-//    )
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -381,9 +370,11 @@ fun SearchOrFiltersPanel(
 
     Row(modifier = Modifier.height(35.dp)) {
         if (isSearchEnabled) {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
                 SearchField(value = searchText, onSearchValueChanged = onSearchValueChanged)
                 IconButton(
                     onClick = onClearSearchClick,
@@ -415,6 +406,109 @@ fun SearchOrFiltersPanel(
     }
 }
 
+@Composable
+fun SearchHintsTop(onClearClick: Click) {
+    Row(
+        modifier = Modifier
+            .padding(vertical = 4.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "История поиска",
+            style = Montserrat.SemiBold600.SP13,
+            color = AppColors.grayHistory,
+        )
+
+        Text(
+            text = "Очистить",
+            style = Montserrat.SemiBold600.SP13,
+            color = AppColors.blueAccent,
+            modifier = Modifier.clickable(onClick = onClearClick)
+        )
+    }
+}
+
+@Composable
+fun HintItem(text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_clock),
+            contentDescription = null,
+            tint = AppColors.grayHistory,
+            modifier = Modifier.padding(start = 13.dp, end = 6.dp)
+        )
+
+        Text(
+            text = text,
+            style = Montserrat.Medium500.SP14,
+            color = AppColors.grayHistory
+        )
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun SearchHints(hints: List<String>, listState: LazyListState, listIsNotEmpty: Boolean) {
+    if (listIsNotEmpty) {
+        val offsetToHide = 100
+        val firstItem = listState.layoutInfo.visibleItemsInfo.first()
+        val needToShow =
+            listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < firstItem.size - offsetToHide
+
+
+
+        AnimatedVisibility(
+            visible = needToShow,
+            enter = slideInVertically() + fadeIn(),
+            exit = slideOutVertically() + fadeOut()
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            0,
+                            firstItem.size - listState.firstVisibleItemScrollOffset
+                        )
+                    }
+                    .fillMaxSize()
+                    .alpha(1f - listState.firstVisibleItemScrollOffset.toFloat() / (firstItem.size - offsetToHide))
+                    .background(color = AppColors.shading)
+            )
+
+            Column(
+                modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            0,
+                            firstItem.size - listState.firstVisibleItemScrollOffset
+                        )
+                    }
+                    .background(
+                        color = AppColors.white,
+                        shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+                    )
+                    .padding(horizontal = 16.dp)
+            ) {
+                SearchHintsTop {}
+                Divider(modifier = Modifier.padding(vertical = 4.dp))
+
+                Column(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                    hints.forEach {
+                        HintItem(text = it)
+                    }
+                }
+            }
+        }
+    }
+
+}
 
 @Composable
 private fun Header(
@@ -438,23 +532,7 @@ private fun Header(
                     onClick = onStockTypeClicked
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-//                Row {
-//                    Box(modifier = Modifier.weight(1f)) {
-//                        HeaderButton(
-//                            icon = R.drawable.ic_sorts,
-//                            text = "Сортировка",
-//                            onClick = onSortsClicked
-//                        )
-//                    }
-//                    Spacer(modifier = Modifier.width(10.dp))
-//                    Box(modifier = Modifier.weight(1f)) {
-//                        HeaderButton(
-//                            icon = R.drawable.ic_filters,
-//                            text = "Фильтры",
-//                            onClick = onFiltersClicked
-//                        )
-//                    }
-//                }
+
                 SearchOrFiltersPanel(
                     isSearchEnabled = isSearchEnabled,
                     searchText = searchText,

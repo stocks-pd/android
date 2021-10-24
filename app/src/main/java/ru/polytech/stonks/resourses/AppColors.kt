@@ -11,8 +11,10 @@ object AppColors {
 
     val redAccent = Color(0xFFDE0613)
     val greenAccent = Color(0xFF0EC246)
+    val blueAccent = Color(0xFF4A97DD)
 
     val white = Color(0xFFF9F9F9)
     val black = Color(0xFF000000)
     val transparent = Color(0x00000000)
+    val shading = Color(0xCC000000)
 }
