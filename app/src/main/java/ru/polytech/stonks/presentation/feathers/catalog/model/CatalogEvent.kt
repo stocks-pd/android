@@ -12,6 +12,8 @@ sealed class CatalogEvent {
     object OnSearchClicked : CatalogEvent()
     object OnClearSearchClicked : CatalogEvent()
     class OnSearchTextValueChanged(val newValue: TextFieldValue) : CatalogEvent()
+    object OnClearSearchHistoryClicked : CatalogEvent()
+    class OnHintClicked(val hint: String) : CatalogEvent()
 
     class OnItemClicked(val item: Stock) : CatalogEvent()
 }

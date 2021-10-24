@@ -10,6 +10,7 @@ data class CatalogState(
     val isSearchEnabled: Boolean = false,
     val searchText: TextFieldValue = EMPTY_SEARCH_VALUE,
     val isFavorsEnabled: Boolean = false,
+    val searchHints: List<String> = emptyList()
 ) {
     companion object {
 

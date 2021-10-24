@@ -1,6 +1,5 @@
 package ru.polytech.stonks.presentation.feathers.catalog.ui
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
@@ -11,24 +10,30 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleCoroutineScope
 import coil.compose.rememberImagePainter
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.polytech.stonks.R
 import ru.polytech.stonks.domain.common.model.*
 import ru.polytech.stonks.domain.feathurs.catalog.model.Stock
@@ -60,6 +65,8 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
         }
     ) {
         Box {
+            val focusRequester = remember { FocusRequester() }
+            val coroutineScope = rememberCoroutineScope()
             LazyColumn(state = listState) {
                 item {
                     Header(
@@ -67,10 +74,19 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
                         isSearchEnabled = state.isSearchEnabled,
                         selectedType = state.selectedStockType,
                         searchText = state.searchText,
+                        focusRequester = focusRequester,
                         onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
                         onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
                         onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
-                        onSearchClicked = { consumer(CatalogEvent.OnSearchClicked) },
+                        onSearchClicked = {
+                            consumer(CatalogEvent.OnSearchClicked)
+                            coroutineScope.launch {
+                                if (state.isSearchEnabled) {
+                                    delay(100)
+                                    focusRequester.requestFocus()
+                                }
+                            }
+                        },
                         onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
                         onClearSearchClick = { consumer(CatalogEvent.OnClearSearchClicked) },
                         onSearchValueChanged = { consumer(CatalogEvent.OnSearchTextValueChanged(it)) },
@@ -86,9 +102,10 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
 
             if (state.isSearchEnabled) {
                 SearchHints(
-                    hints = listOf("qweqwe", "qweqwe", "qweeeee"),
+                    hints = state.searchHints,
                     listState = listState,
-                    listIsNotEmpty = state.stocks.isNotEmpty()
+                    onClearClick = { consumer(CatalogEvent.OnClearSearchHistoryClicked) },
+                    onHintClick = { consumer(CatalogEvent.OnHintClicked(it)) }
                 )
             }
         }
@@ -324,8 +341,11 @@ fun HeaderDescription() {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SearchField(value: TextFieldValue, onSearchValueChanged: (TextFieldValue) -> Unit) {
+fun SearchField(focusRequester: FocusRequester, value: TextFieldValue, onSearchValueChanged: (TextFieldValue) -> Unit) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     BasicTextField(
         value = value,
         onValueChange = onSearchValueChanged,
@@ -353,7 +373,12 @@ fun SearchField(value: TextFieldValue, onSearchValueChanged: (TextFieldValue) ->
                 }
             }
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .focusRequester(focusRequester),
+        keyboardActions = KeyboardActions(
+            onDone = { keyboardController?.show() },
+        )
     )
 }
 
@@ -362,6 +387,7 @@ fun SearchField(value: TextFieldValue, onSearchValueChanged: (TextFieldValue) ->
 fun SearchOrFiltersPanel(
     isSearchEnabled: Boolean,
     searchText: TextFieldValue,
+    focusRequester: FocusRequester,
     onSortsClicked: Click,
     onFiltersClicked: Click,
     onClearSearchClick: Click,
@@ -375,7 +401,11 @@ fun SearchOrFiltersPanel(
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                SearchField(value = searchText, onSearchValueChanged = onSearchValueChanged)
+                SearchField(
+                    focusRequester = focusRequester,
+                    value = searchText,
+                    onSearchValueChanged = onSearchValueChanged
+                )
                 IconButton(
                     onClick = onClearSearchClick,
                     modifier = Modifier.align(Alignment.CenterEnd)
@@ -430,11 +460,12 @@ fun SearchHintsTop(onClearClick: Click) {
 }
 
 @Composable
-fun HintItem(text: String) {
+fun HintItem(text: String, onClick: Click) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(30.dp),
+            .height(30.dp)
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -454,34 +485,40 @@ fun HintItem(text: String) {
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun SearchHints(hints: List<String>, listState: LazyListState, listIsNotEmpty: Boolean) {
-    if (listIsNotEmpty) {
-        val offsetToHide = 100
-        val firstItem = listState.layoutInfo.visibleItemsInfo.first()
-        val needToShow =
-            listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < firstItem.size - offsetToHide
+fun SearchHints(
+    hints: List<String>,
+    listState: LazyListState,
+    onClearClick: Click,
+    onHintClick: (String) -> Unit
+) {
 
+    val offsetToHide = 100
+    val firstItem = listState.layoutInfo.visibleItemsInfo.first()
+    val needToShow = listState.firstVisibleItemIndex == 0 &&
+            listState.firstVisibleItemScrollOffset < firstItem.size - offsetToHide
 
+    AnimatedVisibility(
+        visible = needToShow,
+        enter = slideInVertically() + fadeIn(),
+        exit = slideOutVertically() + fadeOut()
+    ) {
 
-        AnimatedVisibility(
-            visible = needToShow,
-            enter = slideInVertically() + fadeIn(),
-            exit = slideOutVertically() + fadeOut()
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            0,
-                            firstItem.size - listState.firstVisibleItemScrollOffset
-                        )
-                    }
-                    .fillMaxSize()
-                    .alpha(1f - listState.firstVisibleItemScrollOffset.toFloat() / (firstItem.size - offsetToHide))
-                    .background(color = AppColors.shading)
-            )
-
+        Box(
+            modifier = Modifier
+                .offset {
+                    IntOffset(
+                        0,
+                        firstItem.size - listState.firstVisibleItemScrollOffset
+                    )
+                }
+                .fillMaxSize()
+                .alpha(
+                    1f - listState.firstVisibleItemScrollOffset.toFloat() /
+                            (firstItem.size - offsetToHide)
+                )
+                .background(color = AppColors.shading)
+        )
+        if (hints.isNotEmpty()) {
             Column(
                 modifier = Modifier
                     .offset {
@@ -494,21 +531,22 @@ fun SearchHints(hints: List<String>, listState: LazyListState, listIsNotEmpty: B
                         color = AppColors.white,
                         shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
                     )
+                    .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                SearchHintsTop {}
+                SearchHintsTop(onClearClick = onClearClick)
                 Divider(modifier = Modifier.padding(vertical = 4.dp))
 
-                Column(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                Column(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
                     hints.forEach {
-                        HintItem(text = it)
+                        HintItem(text = it, onClick = { onHintClick(it) })
                     }
                 }
             }
         }
     }
-
 }
+
 
 @Composable
 private fun Header(
@@ -516,6 +554,7 @@ private fun Header(
     isSearchEnabled: Boolean,
     selectedType: StockType,
     searchText: TextFieldValue,
+    focusRequester: FocusRequester,
     onStockTypeClicked: (StockType) -> Unit,
     onSortsClicked: Click,
     onFiltersClicked: Click,
@@ -539,7 +578,8 @@ private fun Header(
                     onSortsClicked = onSortsClicked,
                     onFiltersClicked = onFiltersClicked,
                     onClearSearchClick = onClearSearchClick,
-                    onSearchValueChanged = onSearchValueChanged
+                    onSearchValueChanged = onSearchValueChanged,
+                    focusRequester = focusRequester
                 )
             }
 
@@ -581,9 +621,3 @@ fun ItemPreview() {
         onClick = {}
     )
 }
-
-//@Preview
-//@Composable
-//fun HeaderPreview() {
-//    Header(false, StockType.STOCK, TextFieldValue(""), {}, {}, {}, {}, {})
-//}
