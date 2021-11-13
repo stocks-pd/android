@@ -1,15 +1,21 @@
 package ru.polytech.stonks.presentation.feathers.catalog.model
 
-import ru.polytech.stonks.domain.common.model.Currency
-import ru.polytech.stonks.domain.common.model.Period
-import ru.polytech.stonks.domain.common.model.Price
-import ru.polytech.stonks.domain.common.model.PriceDifference
+import androidx.compose.ui.text.input.TextFieldValue
+import ru.polytech.stonks.domain.common.model.*
 import ru.polytech.stonks.domain.feathurs.catalog.model.Stock
 
 data class CatalogState(
-    val stocks: List<Stock> = emptyList()
+    val stocks: List<Stock> = emptyList(),
+    val selectedStockType: StockType = StockType.STOCK,
+    val isSearchEnabled: Boolean = false,
+    val searchText: TextFieldValue = EMPTY_SEARCH_VALUE,
+    val isFavorsEnabled: Boolean = false,
+    val searchHints: List<String> = emptyList()
 ) {
     companion object {
+
+        val EMPTY_SEARCH_VALUE = TextFieldValue("")
+
         val stub = CatalogState(
             stocks = List(40) {
                 Stock(
@@ -22,7 +28,8 @@ data class CatalogState(
                             Period.Day to PriceDifference(percent = 23.1, isGrows = true)
                         )
                     ),
-                    imageUrl = "https://pbs.twimg.com/media/EBEaNVtUcAEZp3E.png"
+                    imageUrl = "https://pbs.twimg.com/media/EBEaNVtUcAEZp3E.png",
+                    type = StockType.STOCK
                 )
             }
         )

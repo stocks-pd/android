@@ -7,10 +7,14 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.widget.Placeholder
 import ru.polytech.stonks.resourses.AppColors
 import ru.polytech.stonks.resourses.Montserrat
+
+typealias Click = () -> Unit
 
 object Compose {
 
@@ -41,16 +45,18 @@ object Compose {
                 Text(
                     text = "Экран находится в разработке",
                     style = Montserrat.SemiBold600.SP16,
-                    color = AppColors.grayDark
+                    color = AppColors.grayPlaceholder
                 )
             }
         }
     }
+
+
 }
 
 @Preview
 @Composable
-fun ToolbarWithTextPreview() {
+private fun ToolbarWithTextPreview() {
     Compose.ToolbarWithText(
         text = "Toolbar"
     )
@@ -58,6 +64,6 @@ fun ToolbarWithTextPreview() {
 
 @Preview
 @Composable
-fun SnapPreview() {
+private fun SnapPreview() {
     Compose.Snap()
 }

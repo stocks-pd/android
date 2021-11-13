@@ -115,6 +115,30 @@ object Montserrat {
             lineHeight = 16.sp
         )
 
+        val SP11 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W600,
+            fontStyle = FontStyle.Normal,
+            fontSize = 11.sp,
+            lineHeight = 16.sp
+        )
+
+        val SP13 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W600,
+            fontStyle = FontStyle.Normal,
+            fontSize = 13.sp,
+            lineHeight = 16.sp
+        )
+
+        val SP14 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W600,
+            fontStyle = FontStyle.Normal,
+            fontSize = 14.sp,
+            lineHeight = 16.sp
+        )
+
         val SP16 = TextStyle(
             fontFamily = montserrat,
             fontWeight = FontWeight.W600,
@@ -140,6 +164,22 @@ object Montserrat {
             fontSize = 14.sp,
             lineHeight = 16.sp
         )
+
+        val SP13 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W500,
+            fontStyle = FontStyle.Normal,
+            fontSize = 13.sp,
+            lineHeight = 16.sp
+        )
+
+        val SP11 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W500,
+            fontStyle = FontStyle.Normal,
+            fontSize = 11.sp,
+            lineHeight = 16.sp
+        )
     }
 
     object Bold700 {
@@ -148,6 +188,22 @@ object Montserrat {
             fontWeight = FontWeight.W700,
             fontStyle = FontStyle.Normal,
             fontSize = 18.sp,
+            lineHeight = 16.sp
+        )
+
+        val SP14 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W700,
+            fontStyle = FontStyle.Normal,
+            fontSize = 14.sp,
+            lineHeight = 16.sp
+        )
+
+        val SP12 = TextStyle(
+            fontFamily = montserrat,
+            fontWeight = FontWeight.W700,
+            fontStyle = FontStyle.Normal,
+            fontSize = 12.sp,
             lineHeight = 16.sp
         )
     }
