@@ -8,7 +8,7 @@ import kotlinx.serialization.Transient
 data class Price(
     @SerialName("value") val value: Double,
     @SerialName("currency") val currencyText: String,
-    @SerialName("differences") val difference: PriceDifference,
+    @SerialName("differences") val difference: List<PriceDifference>,
 ) {
     @Transient val displayed: String = "$value $currencyText"
     @Transient val currency: Currency = Currency.fromString(currencyText)

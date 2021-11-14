@@ -1,6 +1,6 @@
 package ru.polytech.stonks.presentation.feathers.catalog
 
-import androidx.compose.ui.text.input.TextFieldValue
+import ru.polytech.stonks.data.catalog.use_cases.GetCatalogUseCase
 import ru.polytech.stonks.data.search_query.use_cases.ClearSavedQueriesUseCase
 import ru.polytech.stonks.data.search_query.use_cases.GetSavedQueriesUseCase
 import ru.polytech.stonks.data.search_query.use_cases.SaveQueryUseCase
@@ -14,9 +14,10 @@ class CatalogViewModel @Inject constructor(
     private val getSavedQueriesUseCase: GetSavedQueriesUseCase,
     private val saveQueryUseCase: SaveQueryUseCase,
     private val clearSavedQueriesUseCase: ClearSavedQueriesUseCase,
-) : BaseViewModel<CatalogState, CatalogAction, CatalogEvent>(CatalogState.stub) {
+    private val getCatalogUseCase: GetCatalogUseCase,
+) : BaseViewModel<CatalogState, CatalogAction, CatalogEvent>(CatalogState()) {
 
-    override fun obtainEvent(event: CatalogEvent) {
+    override fun obtainEvent(event: CatalogEvent) = launchUnit {
         when (event) {
             CatalogEvent.OnFavorsClicked -> updateState(
                 state.value.copy(isFavorsEnabled = !state.value.isFavorsEnabled)
@@ -64,6 +65,15 @@ class CatalogViewModel @Inject constructor(
             is CatalogEvent.OnSearchTextValueChanged -> updateState(
                 state.value.copy(searchText = event.newValue)
             )
+            CatalogEvent.OnCreate -> {
+                state.value = state.value.copy(
+                    isLoading = true
+                )
+                state.value = state.value.copy(
+                    stocks = getCatalogUseCase(),
+                    isLoading = false
+                )
+            }
         }
     }
 

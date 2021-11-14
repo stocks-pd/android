@@ -1,5 +1,6 @@
 package ru.polytech.stonks.data.catalog.data_sources
 
+import android.util.Log
 import io.ktor.client.request.*
 import ru.polytech.stonks.data.util.ApplicationHttpClient
 import ru.polytech.stonks.domain.feathurs.catalog.model.Stock
@@ -10,11 +11,13 @@ class KtorCatalogDataSource @Inject constructor(
 ) {
 
     suspend fun getCatalog(): List<Stock> {
-        return http.client.post {
+        return http.client.get {
             url {
-                path("stocks")
-                header("Content-Type", "application/json")
+                path("search/rt")
+
                 // todo add filters
+
+                Log.d("!!!", "getCatalog: ${this.buildString()}")
             }
         }
     }

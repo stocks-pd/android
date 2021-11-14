@@ -48,65 +48,76 @@ import ru.polytech.stonks.resourses.AppColors
 fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEvent) -> Unit) {
     val state by remember { modelState }
     val listState = rememberLazyListState()
-    Scaffold(
-        backgroundColor = AppColors.white,
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = if (listState.firstVisibleItemIndex != 0 ||
-                            listState.firstVisibleItemScrollOffset != 0
-                        ) 6.dp else 0.dp,
-                    )
-            ) {
-                Compose.ToolbarWithText(text = "Каталог")
-            }
-        }
-    ) {
-        Box {
-            val focusRequester = remember { FocusRequester() }
-            val coroutineScope = rememberCoroutineScope()
-            LazyColumn(state = listState) {
-                item {
-                    Header(
-                        isFavorsEnabled = state.isFavorsEnabled,
-                        isSearchEnabled = state.isSearchEnabled,
-                        selectedType = state.selectedStockType,
-                        searchText = state.searchText,
-                        focusRequester = focusRequester,
-                        onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
-                        onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
-                        onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
-                        onSearchClicked = {
-                            consumer(CatalogEvent.OnSearchClicked)
-                            coroutineScope.launch {
-                                if (state.isSearchEnabled) {
-                                    delay(100)
-                                    focusRequester.requestFocus()
-                                }
-                            }
-                        },
-                        onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
-                        onClearSearchClick = { consumer(CatalogEvent.OnClearSearchClicked) },
-                        onSearchValueChanged = { consumer(CatalogEvent.OnSearchTextValueChanged(it)) },
-                    )
-                }
-                items(state.stocks.size) { index ->
-                    StockItem(
-                        item = state.stocks[index],
-                        onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
-                    )
-                }
-            }
 
-            if (state.isSearchEnabled) {
-                SearchHints(
-                    hints = state.searchHints,
-                    listState = listState,
-                    onClearClick = { consumer(CatalogEvent.OnClearSearchHistoryClicked) },
-                    onHintClick = { consumer(CatalogEvent.OnHintClicked(it)) }
-                )
+    Crossfade(targetState = state.isLoading) {
+        if (it) {
+            Scaffold(backgroundColor = AppColors.white) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        } else {
+            Scaffold(
+                backgroundColor = AppColors.white,
+                topBar = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = if (listState.firstVisibleItemIndex != 0 ||
+                                    listState.firstVisibleItemScrollOffset != 0
+                                ) 6.dp else 0.dp,
+                            )
+                    ) {
+                        Compose.ToolbarWithText(text = "Каталог")
+                    }
+                }
+            ) {
+                Box {
+                    val focusRequester = remember { FocusRequester() }
+                    val coroutineScope = rememberCoroutineScope()
+                    LazyColumn(state = listState) {
+                        item {
+                            Header(
+                                isFavorsEnabled = state.isFavorsEnabled,
+                                isSearchEnabled = state.isSearchEnabled,
+                                selectedType = state.selectedStockType,
+                                searchText = state.searchText,
+                                focusRequester = focusRequester,
+                                onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
+                                onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
+                                onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
+                                onSearchClicked = {
+                                    consumer(CatalogEvent.OnSearchClicked)
+                                    coroutineScope.launch {
+                                        if (state.isSearchEnabled) {
+                                            delay(100)
+                                            focusRequester.requestFocus()
+                                        }
+                                    }
+                                },
+                                onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
+                                onClearSearchClick = { consumer(CatalogEvent.OnClearSearchClicked) },
+                                onSearchValueChanged = { consumer(CatalogEvent.OnSearchTextValueChanged(it)) },
+                            )
+                        }
+                        items(state.stocks.size) { index ->
+                            StockItem(
+                                item = state.stocks[index],
+                                onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
+                            )
+                        }
+                    }
+
+                    if (state.isSearchEnabled) {
+                        SearchHints(
+                            hints = state.searchHints,
+                            listState = listState,
+                            onClearClick = { consumer(CatalogEvent.OnClearSearchHistoryClicked) },
+                            onHintClick = { consumer(CatalogEvent.OnHintClicked(it)) }
+                        )
+                    }
+                }
             }
         }
     }
@@ -172,9 +183,9 @@ private fun StockItem(item: Stock, onClick: Click) {
                 color = AppColors.black,
             )
             Text(
-                text = item.price.difference[Period.Day]?.displayed ?: "",
+                text = item.price.difference.firstOrNull { it.period is Period.Day }?.displayed ?: "",
                 style = Montserrat.SemiBold600.SP11,
-                color = if (item.price.difference[Period.Day]?.isGrows == true) {
+                color = if (item.price.difference.firstOrNull { it.period is Period.Day }?.isGrows == true) {
                     AppColors.greenAccent
                 } else {
                     AppColors.redAccent
@@ -537,7 +548,9 @@ fun SearchHints(
                 SearchHintsTop(onClearClick = onClearClick)
                 Divider(modifier = Modifier.padding(vertical = 4.dp))
 
-                Column(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())) {
                     hints.forEach {
                         HintItem(text = it, onClick = { onHintClick(it) })
                     }
@@ -599,25 +612,4 @@ private fun Header(
         }
         HeaderDescription()
     }
-}
-
-@Preview
-@Composable
-fun ItemPreview() {
-    StockItem(
-        item = Stock(
-            ticker = "GGLE",
-            name = "Google ",
-            price = Price(
-                value = 123.12,
-                currency = Currency.Dollar,
-                difference = mapOf(
-                    Period.Day to PriceDifference(percent = 23.1, isGrows = true)
-                )
-            ),
-            imageUrl = "https://pbs.twimg.com/media/EBEaNVtUcAEZp3E.png",
-            type = StockType.STOCK
-        ),
-        onClick = {}
-    )
 }

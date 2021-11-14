@@ -5,6 +5,7 @@ import ru.polytech.stonks.domain.common.model.StockType
 import ru.polytech.stonks.domain.feathurs.catalog.model.Stock
 
 sealed class CatalogEvent {
+    object OnCreate : CatalogEvent()
     class OnTypeChanged(val type: StockType) : CatalogEvent()
     object OnFavorsClicked : CatalogEvent()
     object OnSortsClicked : CatalogEvent()

@@ -1,34 +1,32 @@
 package ru.polytech.stonks.data.util
 
+import android.util.Log
 import io.ktor.client.*
-import io.ktor.client.engine.apache.*
+import io.ktor.client.engine.android.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ApplicationHttpClient @Inject constructor() {
 
-    val client = HttpClient(Apache) {
-        engine {
-            followRedirects = true
-            socketTimeout = 10_000
-            connectTimeout = 10_000
-            connectionRequestTimeout = 20_000
+    val client = HttpClient(Android) {
+        install(Logging) {
+            logger = Logger.ANDROID
+            level = LogLevel.BODY
         }
 
         defaultRequest {
             url {
-                host = "localhost:8080/"
+                host = "192.168.0.17"
+                port = 8080
+//                protocol = URLProtocol.HTTP
             }
-        }
-
-        install(Logging) {
-            logger = Logger.DEFAULT
-            level = LogLevel.BODY
         }
 
         install(JsonFeature) {
