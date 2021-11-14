@@ -116,7 +116,7 @@ fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEven
 private fun StockItem(item: Stock, onClick: Click) {
     Row(
         modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+            .padding(start = 16.dp, end = 16.dp, bottom = 14.dp)
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(10.dp))
             .fillMaxWidth()
             .height(50.dp)
@@ -464,7 +464,7 @@ fun HintItem(text: String, onClick: Click) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(30.dp)
+            .height(48.dp)
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
