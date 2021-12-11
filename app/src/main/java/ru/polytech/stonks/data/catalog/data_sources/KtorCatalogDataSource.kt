@@ -16,8 +16,6 @@ class KtorCatalogDataSource @Inject constructor(
                 path("search/rt")
 
                 // todo add filters
-
-                Log.d("!!!", "getCatalog: ${this.buildString()}")
             }
         }
     }

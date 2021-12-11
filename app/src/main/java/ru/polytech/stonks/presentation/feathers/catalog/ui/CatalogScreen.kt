@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -130,12 +131,13 @@ private fun StockItem(item: Stock, onClick: Click) {
             .padding(start = 16.dp, end = 16.dp, bottom = 14.dp)
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(10.dp))
             .fillMaxWidth()
-            .height(50.dp)
+            .height(56.dp)
             .background(
                 color = AppColors.grayLight,
                 shape = RoundedCornerShape(10.dp)
             )
             .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = rememberImagePainter(
@@ -155,12 +157,14 @@ private fun StockItem(item: Stock, onClick: Click) {
 
         Column(
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxHeight()
+            modifier = Modifier.fillMaxHeight().padding(end = 8.dp).weight(1f)
         ) {
             Text(
                 text = item.name,
                 style = Montserrat.Bold700.SP14,
                 color = AppColors.black,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
             )
             Text(
                 text = item.ticker,
@@ -169,10 +173,9 @@ private fun StockItem(item: Stock, onClick: Click) {
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-
         Column(
             verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.End,
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(end = 13.dp)

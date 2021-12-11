@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import ru.polytech.stonks.app.appComponent
 import ru.polytech.stonks.presentation.core.base.BaseFragment
 import ru.polytech.stonks.presentation.feathers.catalog.model.CatalogAction

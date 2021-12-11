@@ -11,6 +11,8 @@ data class PriceDifference(
     @SerialName("isGrows") val isGrows: Boolean,
     @SerialName("period") val periodText: String,
 ) {
-    @Transient val displayed: String = "${if (isGrows) "↑" else "↓"} $percent%"
+    @Transient val displayed: String = "${growSym()}$change (${growSym()}$percent%)"
     @Transient val period: Period = Period.fromString(periodText)
+
+    private fun growSym(): String = if (isGrows) "+" else "-"
 }

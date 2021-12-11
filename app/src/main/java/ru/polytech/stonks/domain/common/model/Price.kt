@@ -10,6 +10,6 @@ data class Price(
     @SerialName("currency") val currencyText: String,
     @SerialName("differences") val difference: List<PriceDifference>,
 ) {
-    @Transient val displayed: String = "$value $currencyText"
     @Transient val currency: Currency = Currency.fromString(currencyText)
+    @Transient val displayed: String = "$value ${currency.symbol}"
 }

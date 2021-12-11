@@ -25,7 +25,6 @@ class ApplicationHttpClient @Inject constructor() {
             url {
                 host = "192.168.0.17"
                 port = 8080
-//                protocol = URLProtocol.HTTP
             }
         }
 

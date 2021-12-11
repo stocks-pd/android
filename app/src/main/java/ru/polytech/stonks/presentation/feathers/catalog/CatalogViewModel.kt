@@ -1,5 +1,9 @@
 package ru.polytech.stonks.presentation.feathers.catalog
 
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.polytech.stonks.data.catalog.use_cases.GetCatalogUseCase
 import ru.polytech.stonks.data.search_query.use_cases.ClearSavedQueriesUseCase
 import ru.polytech.stonks.data.search_query.use_cases.GetSavedQueriesUseCase
