@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
@@ -21,5 +22,9 @@ abstract class BaseViewModel<ViewState, Action, Event>(initState: ViewState) : V
 
     protected fun callAction(action: Action) = viewModelScope.launch {
         actions.emit(action)
+    }
+
+    protected fun launchUnit(block: suspend () -> Unit) {
+        viewModelScope.launch { block() }
     }
 }

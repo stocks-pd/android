@@ -10,7 +10,9 @@ data class CatalogState(
     val isSearchEnabled: Boolean = false,
     val searchText: TextFieldValue = EMPTY_SEARCH_VALUE,
     val isFavorsEnabled: Boolean = false,
-    val searchHints: List<String> = emptyList()
+    val searchHints: List<String> = emptyList(),
+
+    val isLoading: Boolean = true
 ) {
     companion object {
 
@@ -23,13 +25,18 @@ data class CatalogState(
                     name = "Google",
                     price = Price(
                         value = 123.12,
-                        currency = Currency.Dollar,
-                        difference = mapOf(
-                            Period.Day to PriceDifference(percent = 23.1, isGrows = true)
+                        currencyText = "USD",
+                        difference = listOf(
+                            PriceDifference(
+                                percent = 12.1,
+                                change = 123.0,
+                                isGrows = true,
+                                periodText = "DAY"
+                            )
                         )
                     ),
                     imageUrl = "https://pbs.twimg.com/media/EBEaNVtUcAEZp3E.png",
-                    type = StockType.STOCK
+                    typeText = "stock"
                 )
             }
         )

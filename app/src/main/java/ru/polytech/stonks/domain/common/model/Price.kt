@@ -1,9 +1,15 @@
 package ru.polytech.stonks.domain.common.model
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+
+@Serializable
 data class Price(
-    val value: Double,
-    val currency: Currency,
-    val difference: Map<Period, PriceDifference>,
+    @SerialName("value") val value: Double,
+    @SerialName("currency") val currencyText: String,
+    @SerialName("differences") val difference: List<PriceDifference>,
 ) {
-    val displayed: String = "$value ${currency.symbol}"
+    @Transient val currency: Currency = Currency.fromString(currencyText)
+    @Transient val displayed: String = "$value ${currency.symbol}"
 }

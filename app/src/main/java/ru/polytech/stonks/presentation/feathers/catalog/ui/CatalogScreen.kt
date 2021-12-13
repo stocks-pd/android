@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -48,65 +49,76 @@ import ru.polytech.stonks.resourses.AppColors
 fun CatalogScreen(modelState: MutableState<CatalogState>, consumer: (CatalogEvent) -> Unit) {
     val state by remember { modelState }
     val listState = rememberLazyListState()
-    Scaffold(
-        backgroundColor = AppColors.white,
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = if (listState.firstVisibleItemIndex != 0 ||
-                            listState.firstVisibleItemScrollOffset != 0
-                        ) 6.dp else 0.dp,
-                    )
-            ) {
-                Compose.ToolbarWithText(text = "Каталог")
-            }
-        }
-    ) {
-        Box {
-            val focusRequester = remember { FocusRequester() }
-            val coroutineScope = rememberCoroutineScope()
-            LazyColumn(state = listState) {
-                item {
-                    Header(
-                        isFavorsEnabled = state.isFavorsEnabled,
-                        isSearchEnabled = state.isSearchEnabled,
-                        selectedType = state.selectedStockType,
-                        searchText = state.searchText,
-                        focusRequester = focusRequester,
-                        onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
-                        onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
-                        onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
-                        onSearchClicked = {
-                            consumer(CatalogEvent.OnSearchClicked)
-                            coroutineScope.launch {
-                                if (state.isSearchEnabled) {
-                                    delay(100)
-                                    focusRequester.requestFocus()
-                                }
-                            }
-                        },
-                        onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
-                        onClearSearchClick = { consumer(CatalogEvent.OnClearSearchClicked) },
-                        onSearchValueChanged = { consumer(CatalogEvent.OnSearchTextValueChanged(it)) },
-                    )
-                }
-                items(state.stocks.size) { index ->
-                    StockItem(
-                        item = state.stocks[index],
-                        onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
-                    )
-                }
-            }
 
-            if (state.isSearchEnabled) {
-                SearchHints(
-                    hints = state.searchHints,
-                    listState = listState,
-                    onClearClick = { consumer(CatalogEvent.OnClearSearchHistoryClicked) },
-                    onHintClick = { consumer(CatalogEvent.OnHintClicked(it)) }
-                )
+    Crossfade(targetState = state.isLoading) {
+        if (it) {
+            Scaffold(backgroundColor = AppColors.white) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        } else {
+            Scaffold(
+                backgroundColor = AppColors.white,
+                topBar = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = if (listState.firstVisibleItemIndex != 0 ||
+                                    listState.firstVisibleItemScrollOffset != 0
+                                ) 6.dp else 0.dp,
+                            )
+                    ) {
+                        Compose.ToolbarWithText(text = "Каталог")
+                    }
+                }
+            ) {
+                Box {
+                    val focusRequester = remember { FocusRequester() }
+                    val coroutineScope = rememberCoroutineScope()
+                    LazyColumn(state = listState) {
+                        item {
+                            Header(
+                                isFavorsEnabled = state.isFavorsEnabled,
+                                isSearchEnabled = state.isSearchEnabled,
+                                selectedType = state.selectedStockType,
+                                searchText = state.searchText,
+                                focusRequester = focusRequester,
+                                onStockTypeClicked = { consumer(CatalogEvent.OnTypeChanged(it)) },
+                                onSortsClicked = { consumer(CatalogEvent.OnSortsClicked) },
+                                onFiltersClicked = { consumer(CatalogEvent.OnFiltersClicked) },
+                                onSearchClicked = {
+                                    consumer(CatalogEvent.OnSearchClicked)
+                                    coroutineScope.launch {
+                                        if (state.isSearchEnabled) {
+                                            delay(100)
+                                            focusRequester.requestFocus()
+                                        }
+                                    }
+                                },
+                                onFavorsClicked = { consumer(CatalogEvent.OnFavorsClicked) },
+                                onClearSearchClick = { consumer(CatalogEvent.OnClearSearchClicked) },
+                                onSearchValueChanged = { consumer(CatalogEvent.OnSearchTextValueChanged(it)) },
+                            )
+                        }
+                        items(state.stocks.size) { index ->
+                            StockItem(
+                                item = state.stocks[index],
+                                onClick = { consumer(CatalogEvent.OnItemClicked(state.stocks[index])) }
+                            )
+                        }
+                    }
+
+                    if (state.isSearchEnabled) {
+                        SearchHints(
+                            hints = state.searchHints,
+                            listState = listState,
+                            onClearClick = { consumer(CatalogEvent.OnClearSearchHistoryClicked) },
+                            onHintClick = { consumer(CatalogEvent.OnHintClicked(it)) }
+                        )
+                    }
+                }
             }
         }
     }
@@ -119,12 +131,13 @@ private fun StockItem(item: Stock, onClick: Click) {
             .padding(start = 16.dp, end = 16.dp, bottom = 14.dp)
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(10.dp))
             .fillMaxWidth()
-            .height(50.dp)
+            .height(56.dp)
             .background(
                 color = AppColors.grayLight,
                 shape = RoundedCornerShape(10.dp)
             )
             .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = rememberImagePainter(
@@ -144,12 +157,14 @@ private fun StockItem(item: Stock, onClick: Click) {
 
         Column(
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxHeight()
+            modifier = Modifier.fillMaxHeight().padding(end = 8.dp).weight(1f)
         ) {
             Text(
                 text = item.name,
                 style = Montserrat.Bold700.SP14,
                 color = AppColors.black,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
             )
             Text(
                 text = item.ticker,
@@ -158,10 +173,9 @@ private fun StockItem(item: Stock, onClick: Click) {
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-
         Column(
             verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.End,
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(end = 13.dp)
@@ -172,9 +186,9 @@ private fun StockItem(item: Stock, onClick: Click) {
                 color = AppColors.black,
             )
             Text(
-                text = item.price.difference[Period.Day]?.displayed ?: "",
+                text = item.price.difference.firstOrNull { it.period is Period.Day }?.displayed ?: "",
                 style = Montserrat.SemiBold600.SP11,
-                color = if (item.price.difference[Period.Day]?.isGrows == true) {
+                color = if (item.price.difference.firstOrNull { it.period is Period.Day }?.isGrows == true) {
                     AppColors.greenAccent
                 } else {
                     AppColors.redAccent
@@ -537,7 +551,9 @@ fun SearchHints(
                 SearchHintsTop(onClearClick = onClearClick)
                 Divider(modifier = Modifier.padding(vertical = 4.dp))
 
-                Column(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())) {
                     hints.forEach {
                         HintItem(text = it, onClick = { onHintClick(it) })
                     }
@@ -599,25 +615,4 @@ private fun Header(
         }
         HeaderDescription()
     }
-}
-
-@Preview
-@Composable
-fun ItemPreview() {
-    StockItem(
-        item = Stock(
-            ticker = "GGLE",
-            name = "Google ",
-            price = Price(
-                value = 123.12,
-                currency = Currency.Dollar,
-                difference = mapOf(
-                    Period.Day to PriceDifference(percent = 23.1, isGrows = true)
-                )
-            ),
-            imageUrl = "https://pbs.twimg.com/media/EBEaNVtUcAEZp3E.png",
-            type = StockType.STOCK
-        ),
-        onClick = {}
-    )
 }
